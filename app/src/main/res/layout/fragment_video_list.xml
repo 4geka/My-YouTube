@@ -12,9 +12,9 @@
         android:hint="@string/search"
         android:id="@+id/search_input"
         android:singleLine="true"
-        android:background="#ffff201f"
+        android:background="#BEBEBE"
         android:clickable="false"
-        android:textColor="#fffffded" />
+        android:textColor="#111" />
     <FrameLayout
         android:id="@+id/video_container"
         android:layout_width="match_parent"

@@ -5,4 +5,5 @@
     <string name="search">Искать</string>
     <string name="failed">Не удалось инициализировать плеер!</string>
     <string name="title_activity_player">PlayerActivity</string>
+    <string name="action_search">Искать</string>
 </resources>

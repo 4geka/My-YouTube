@@ -6,7 +6,7 @@ package ergo_proxy.wakawaka.Model;
 public class VideoItem {
     private String title;
     private String description;
-    private Long Date;
+    private long date;
     private String thumbnailURL;
     private String id;
 
@@ -43,6 +43,9 @@ public class VideoItem {
     }
 
     public void setDate(long date) {
-        this.Date = date;
+        this.date = date;
+    }
+    public long getDate() {
+        return date;
     }
 }

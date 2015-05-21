@@ -21,7 +21,12 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.text.DateFormat;
+import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import ergo_proxy.wakawaka.Model.VideoItem;
 import ergo_proxy.wakawaka.Util.UtubeDataConnector;
@@ -37,7 +42,7 @@ public class VideoListActivityFragment extends Fragment {
 
     private EditText mSearchInput;
     private ListView mVideosFound;
-
+    private SimpleDateFormat mJUD;
     private Handler mHandler;
     private String mQueryString;
 
@@ -49,7 +54,7 @@ public class VideoListActivityFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setHasOptionsMenu(true);
-
+        JUDInit();
         mSearchInput = (EditText)getView().findViewById(R.id.search_input);
         mVideosFound = (ListView)getView().findViewById(R.id.videos_found);
 
@@ -119,6 +124,8 @@ public class VideoListActivityFragment extends Fragment {
                 Picasso.with(getActivity().getApplicationContext()).load(searchResult.getThumbnailURL()).into(thumbnail);
                 title.setText(searchResult.getTitle());
                 description.setText(searchResult.getDescription());
+                Date date = new Date(searchResult.getDate());
+                videoDate.setText(mJUD.format(date));
                 return convertView;
             }
         };
@@ -143,7 +150,19 @@ public class VideoListActivityFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(VIDEO_QUERY_TAG,mQueryString);
+        outState.putString(VIDEO_QUERY_TAG, mQueryString);
 
+    }
+    private void JUDInit() {
+        Locale russian = new Locale("ru");
+        String[] newMonths = {
+                "января", "февраля", "марта", "апреля", "мая", "июня",
+                "июля", "августа", "сентября", "октября", "ноября", "декабря"};
+        DateFormatSymbols dfs = DateFormatSymbols.getInstance(russian);
+        dfs.setMonths(newMonths);
+        DateFormat df = DateFormat.getDateInstance(DateFormat.LONG, russian);
+        SimpleDateFormat sdf = (SimpleDateFormat) df;
+        sdf.setDateFormatSymbols(dfs);
+        mJUD  =  new SimpleDateFormat("d MMMM yyyy, HH:mm", new Locale("ru"));
     }
 }
