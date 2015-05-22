@@ -5,7 +5,6 @@
     <style name="AppTheme" parent="@style/Theme.AppCompat.Light">
         <!-- Customize your theme here. -->
         <item name="android:actionBarStyle">@style/MyActionBar</item>
-
         <!-- Support library compatibility -->
         <item name="actionBarStyle">@style/MyActionBar</item>
     </style>
@@ -13,6 +12,7 @@
     <style name="MyActionBar"
         parent="@style/Widget.AppCompat.Light.ActionBar">
         <item name="android:background">@color/primary</item>
+
         <item name="android:titleTextStyle">@style/MyActionBarTitleText</item>
         <!-- Support library compatibility -->
         <item name="background">@color/primary</item>

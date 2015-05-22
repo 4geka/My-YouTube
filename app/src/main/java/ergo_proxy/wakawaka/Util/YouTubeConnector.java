@@ -13,7 +13,6 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
-import org.apache.http.HttpRequest;
 import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoListResponse;
 
@@ -24,16 +23,14 @@ import java.util.List;
 import ergo_proxy.wakawaka.Model.VideoItem;
 import ergo_proxy.wakawaka.R;
 
-public class UtubeDataConnector {
+public class YouTubeConnector {
     private YouTube youtube;
-    private YouTube.Videos.List queryVideo;
     private YouTube.Search.List query;
-    private String mDefaultQuery = "mostPopular";
-    private long mtResultSetSize = 10;
-    public static final String LOCALE_RU = "RU";
-    public static final String DEBUG_TAG = "UtubeDataConnector";
+    private YouTube.Videos.List queryPopular;
 
-    public UtubeDataConnector(Context context) {
+    public static final String KEY = "AIzaSyC6pyliWX1fGdlTjk8pBxKCkbX1iNcBPjk";
+
+    public YouTubeConnector(Context context) {
         youtube = new YouTube.Builder(new NetHttpTransport(),
                 new JacksonFactory(), new HttpRequestInitializer() {
             @Override
@@ -42,48 +39,54 @@ public class UtubeDataConnector {
             }
         }).setApplicationName(context.getString(R.string.app_name)).build();
 
-    }
-    public List<VideoItem> search(String keywords){
 
+    }
+    public ArrayList<VideoItem> search(String keywords){
         try{
             query = youtube.search().list("id,snippet");
-            query.setRegionCode(LOCALE_RU);
-            query.setKey(DeveloperKey.DEVELOPER_KEY);
+            query.setKey(KEY);
             query.setType("video");
-            query.setMaxResults(mtResultSetSize);
+            query.setMaxResults(15l);
             query.setFields("items(id/videoId,snippet/publishedAt,snippet/title,snippet/description,snippet/thumbnails/default/url)");
-            query.setQ(keywords);
+        }catch(IOException e){
+            Log.d("YC", "Не удалось инициализировать: " + e);
+        }
+        query.setQ(keywords);
+        try{
             SearchListResponse response = query.execute();
             List<SearchResult> results = response.getItems();
-            List<VideoItem> items = new ArrayList<VideoItem>();
+
+            ArrayList<VideoItem> items = new ArrayList<VideoItem>();
             for(SearchResult result:results){
                 VideoItem item = new VideoItem();
                 item.setTitle(result.getSnippet().getTitle());
-                item.setDate(result.getSnippet().getPublishedAt().getValue());
                 item.setDescription(result.getSnippet().getDescription());
                 item.setThumbnailURL(result.getSnippet().getThumbnails().getDefault().getUrl());
                 item.setId(result.getId().getVideoId());
+                item.setDate(result.getSnippet().getPublishedAt().getValue());
                 items.add(item);
             }
             return items;
         }catch(IOException e){
-            Log.d(DEBUG_TAG, "Could not initialize: " + e);
-            return new ArrayList<>();
+            Log.d("YC", "Не удалось инициализировать: " + e);
+            return null;
         }
     }
-
-    public List<VideoItem> showLastVideo() {
+    public ArrayList<VideoItem> popularvideo(String mostPopular) {
+        try {
+            queryPopular = youtube.videos().list("id,snippet");
+            queryPopular.setKey(KEY);
+            queryPopular.setMaxResults(15l);
+            queryPopular.setFields("items(id,snippet/publishedAt,snippet/title,snippet/description,snippet/thumbnails/default/url)");
+        }catch(IOException e){
+            Log.d("YC", "Не удалось инициализировать: " + e);
+        }
+        queryPopular.setChart(mostPopular);
         try{
-            queryVideo = youtube.videos().list("id,snippet");
-            queryVideo.setKey(DeveloperKey.DEVELOPER_KEY);
-            queryVideo.setMaxResults(mtResultSetSize);
-            queryVideo.setFields("items(id,snippet/publishedAt,snippet/title,snippet/description,snippet/thumbnails/default/url)");
-            queryVideo.setChart(mDefaultQuery);
-            queryVideo.setRegionCode(LOCALE_RU);
-            VideoListResponse response = queryVideo.execute();
+            VideoListResponse response = queryPopular.execute();
             List<Video> results = response.getItems();
 
-            List<VideoItem> items = new ArrayList<VideoItem>();
+            ArrayList<VideoItem> items = new ArrayList<VideoItem>();
             for(Video result:results){
                 VideoItem item = new VideoItem();
                 item.setTitle(result.getSnippet().getTitle());
@@ -95,8 +98,10 @@ public class UtubeDataConnector {
             }
             return items;
         }catch(IOException e){
-            Log.d(DEBUG_TAG, "Could not search: "+e);
-            return new ArrayList<>();
+            Log.d("YC", "Не удалось инициализировать: " + e);
+            return null;
         }
     }
+
+
 }

@@ -3,6 +3,7 @@ package ergo_proxy.wakawaka.Model;
 /**
  * Created by Ergo Proxy on 18.05.2015.
  */
+
 public class VideoItem {
     private String title;
     private String description;
@@ -41,7 +42,6 @@ public class VideoItem {
     public void setThumbnailURL(String thumbnail) {
         this.thumbnailURL = thumbnail;
     }
-
     public void setDate(long date) {
         this.date = date;
     }

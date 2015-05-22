@@ -25,4 +25,6 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.google.apis:google-api-services-youtube:v3-rev137-1.20.0'
     compile files('libs/YouTubeAndroidPlayerApi.jar')
+    compile 'it.sephiroth.android.library.picasso:picasso:2.5.2.2'
+    compile 'com.github.pedrovgs:draggablepanel:1.8'
 }

@@ -1,66 +1,66 @@
 package ergo_proxy.wakawaka;
 
-import android.content.Context;
-import android.content.Intent;
+/**
+ * Created by Ergo Proxy on 18.05.2015.
+ */
+
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.github.pedrovgs.DraggableListener;
+import com.github.pedrovgs.DraggablePanel;
+import com.google.android.youtube.player.YouTubeInitializationResult;
+import com.google.android.youtube.player.YouTubePlayer;
+import com.google.android.youtube.player.YouTubePlayerSupportFragment;
+import com.google.api.services.youtube.YouTube;
 
-import java.text.DateFormat;
-import java.text.DateFormatSymbols;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.ArrayList;
 
 import ergo_proxy.wakawaka.Model.VideoItem;
-import ergo_proxy.wakawaka.Util.UtubeDataConnector;
+import ergo_proxy.wakawaka.Util.DeveloperKey;
+import ergo_proxy.wakawaka.Util.YouTubeConnector;
 
-/**
- * Created by Ergo-Proxy on 19.05.2015.
- */
-
-/**
- * Заполняющий фрагмент, содержащий простой вид.
- */
 public class VideoListActivityFragment extends Fragment {
 
-    private EditText mSearchInput;
-    private ListView mVideosFound;
-    private SimpleDateFormat mJUD;
-    private Handler mHandler;
-    private String mQueryString;
+    private EditText searchInput;
+    private Handler handler;
+    private ListAdapter mAdapter;
+    private ArrayList<VideoItem> searchResults;
+    private ListView mListView;
+    private YouTube.Videos.List queryPopular;
+    private YouTube youtube;
+    DraggablePanel draggablePanel;
+    private YouTubePlayer youTubePlayer;
+    private YouTubePlayerSupportFragment youTubePlayerFragment;
+    private Player infoFragment;
+    public VideoListActivityFragment() {
+    }
 
-    public static final String VIDEO_ID_TAG="VideoListActivityFragment.videoID";
-    public static final String VIDEO_QUERY_TAG="mQueryString";
-    private List<VideoItem> mSearchResults;
+    public static VideoListActivityFragment newInstance() {
+        return new VideoListActivityFragment();
+    }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+    public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        setHasOptionsMenu(true);
-        JUDInit();
-        mSearchInput = (EditText)getView().findViewById(R.id.search_input);
-        mVideosFound = (ListView)getView().findViewById(R.id.videos_found);
+        mAdapter =  new ListAdapter(getActivity());
+        mListView = (ListView) getView().findViewById(R.id.videos_found);
+        mListView.setAdapter(mAdapter);
+        draggablePanel=(DraggablePanel)getView().findViewById(R.id.draggable_panel);
 
-        mHandler = new Handler();
-
-        mSearchInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        searchInput = (EditText)getView().findViewById(R.id.search_input);
+        handler = new Handler();
+        searchInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH ||
@@ -73,14 +73,13 @@ public class VideoListActivityFragment extends Fragment {
                 return true;
             }
         });
+        searchOnYoutube(null);
         addClickListener();
-        if (savedInstanceState != null){
-            mQueryString=savedInstanceState.getString(VIDEO_QUERY_TAG);
-        }
-
-        searchOnYoutube(mQueryString);
-
+        initializeYoutubeFragment();
+        hookDraggablePanelListeners();
     }
+
+    final String LOG_TAG = "myLogs";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -88,81 +87,117 @@ public class VideoListActivityFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_video_list, container, false);
     }
 
+    private void addClickListener(){
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> av, View v, int pos,
+                                    long id) {
+                if (draggablePanel.getVisibility()!=View.VISIBLE)
+                    draggablePanel.setVisibility(View.VISIBLE);
+                VideoItem videoItem = searchResults.get(pos);
+                setVideoId(videoItem.getId());
+
+            }
+
+        });
+    }
+
     private void searchOnYoutube(final String keywords){
-        final FragmentActivity activity = getActivity();
         new Thread(){
             public void run(){
-                UtubeDataConnector tubeCon = new UtubeDataConnector(activity);
-                if (keywords==null){
-                    mSearchResults = tubeCon.showLastVideo();
-                }
-                else {
-                    mSearchResults = tubeCon.search(keywords);
-                }
-                mHandler.post(new Runnable() {
+                YouTubeConnector yc = new YouTubeConnector(getActivity());
+                if (keywords!=null)
+                    searchResults = yc.search(keywords);
+                else
+                    searchResults = yc.popularvideo("MostPopular");
+                handler.post(new Runnable(){
                     public void run() {
-                        updateVideosFound();
+                        if (keywords != null) {
+
+                            if (!searchResults.isEmpty()) {
+                                mListView.setAdapter(null);
+                                mAdapter.clear();
+                                mAdapter.addNewslist(searchResults);
+                                mListView.setAdapter(mAdapter);
+                            } else {
+                                mAdapter.addNewslist(searchResults);
+                            }
+                        } else {
+                            mAdapter.addNewslist(searchResults);
+                        }
+
                     }
                 });
             }
         }.start();
     }
 
-    private void updateVideosFound(){
-        ArrayAdapter<VideoItem> adapter = new ArrayAdapter<VideoItem>(getActivity().getApplicationContext(), R.layout.video_item, mSearchResults){
+    private void hookDraggablePanelListeners() {
+        draggablePanel.setFragmentManager(getActivity().getSupportFragmentManager());
+        draggablePanel.setTopFragment(youTubePlayerFragment);
+        infoFragment = new Player();
+        draggablePanel.setBottomFragment(infoFragment);
+        draggablePanel.setDraggableListener(new DraggableListener() {
             @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                if(convertView == null){
-                    convertView =getActivity().getLayoutInflater().inflate(R.layout.video_item, parent, false);
-                }
-                ImageView thumbnail = (ImageView)convertView.findViewById(R.id.video_thumbnail);
-                TextView title = (TextView)convertView.findViewById(R.id.video_title);
-                TextView description = (TextView)convertView.findViewById(R.id.video_description);
-                TextView videoDate = (TextView)convertView.findViewById(R.id.video_date);
-
-                VideoItem searchResult = mSearchResults.get(position);
-                Picasso.with(getActivity().getApplicationContext()).load(searchResult.getThumbnailURL()).into(thumbnail);
-                title.setText(searchResult.getTitle());
-                description.setText(searchResult.getDescription());
-                Date date = new Date(searchResult.getDate());
-                videoDate.setText(mJUD.format(date));
-                return convertView;
-            }
-        };
-
-        mVideosFound.setAdapter(adapter);
-    }
-    private void addClickListener(){
-       final Context cnxt = getActivity().getApplicationContext();
-        mVideosFound.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> av, View v, int pos,
-                                    long id) {
-                PlayerYouTubeFragment myFragment = PlayerYouTubeFragment.newInstance(mSearchResults.get(pos).getId());
-                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.video_container, myFragment).commit();
+            public void onMaximized() {
+                playVideo();
             }
 
+            @Override
+            public void onMinimized() {
+
+            }
+
+            @Override
+            public void onClosedToLeft() {
+                pauseVideo();
+            }
+
+            @Override
+            public void onClosedToRight() {
+                pauseVideo();
+            }
         });
-
+        draggablePanel.initializeView();
+        draggablePanel.setVisibility(View.GONE);
     }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString(VIDEO_QUERY_TAG, mQueryString);
-
+    private void pauseVideo() {
+        if (youTubePlayer.isPlaying()) {
+            youTubePlayer.pause();
+        }
     }
-    private void JUDInit() {
-        Locale russian = new Locale("ru");
-        String[] newMonths = {
-                "января", "февраля", "марта", "апреля", "мая", "июня",
-                "июля", "августа", "сентября", "октября", "ноября", "декабря"};
-        DateFormatSymbols dfs = DateFormatSymbols.getInstance(russian);
-        dfs.setMonths(newMonths);
-        DateFormat df = DateFormat.getDateInstance(DateFormat.LONG, russian);
-        SimpleDateFormat sdf = (SimpleDateFormat) df;
-        sdf.setDateFormatSymbols(dfs);
-        mJUD  =  new SimpleDateFormat("d MMMM yyyy, HH:mm", new Locale("ru"));
+    private void playVideo() {
+        if (!youTubePlayer.isPlaying()) {
+            youTubePlayer.play();
+        }
+    }
+    private void initializeYoutubeFragment() {
+        youTubePlayerFragment = new YouTubePlayerSupportFragment();
+        youTubePlayerFragment.initialize(DeveloperKey.DEVELOPER_KEY, new YouTubePlayer.OnInitializedListener() {
+
+            @Override
+            public void onInitializationSuccess(YouTubePlayer.Provider provider,
+                                                YouTubePlayer player, boolean wasRestored) {
+                if (!wasRestored) {
+                    youTubePlayer = player;
+
+                }
+            }
+
+            @Override
+            public void onInitializationFailure(YouTubePlayer.Provider provider,
+                                                YouTubeInitializationResult error) {
+            }
+        });
+    }
+    public void setVideoId(String videoId) {
+        if (videoId != null && !videoId.equals(videoId)) {
+            if (youTubePlayer != null) {
+                youTubePlayer.cueVideo(videoId);
+                youTubePlayer.setShowFullscreenButton(true);
+
+            }
+        }
     }
 }
