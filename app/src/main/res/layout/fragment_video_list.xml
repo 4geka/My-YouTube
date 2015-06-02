@@ -22,7 +22,7 @@
             android:singleLine="true"
             android:background="#BEBEBE"
             android:clickable="false"
-            android:textColor="#111"
+            android:textColor="#FFF"
             />
 
         <ListView

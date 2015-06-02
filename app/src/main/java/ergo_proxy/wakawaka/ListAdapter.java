@@ -22,33 +22,39 @@ import java.util.Locale;
 import it.sephiroth.android.library.picasso.Picasso;
 import ergo_proxy.wakawaka.Model.VideoItem;
 
-public class ListAdapter extends ArrayAdapter<VideoItem> {
+public class ListAdapter extends ArrayAdapter<VideoItem>
+{
 
     private ArrayList<VideoItem> mNewslist;
     private final Context mContext;
     private SimpleDateFormat mJUD;
 
-    public ListAdapter(Context context) {
+    public ListAdapter(Context context)
+    {
         super(context, R.layout.list_element);
         mNewslist = new ArrayList<>();
         mContext = context;
         JUDInit();
     }
 
-    public void addNewslist(ArrayList<VideoItem> parsedNewsList) {
+    public void addNewslist(ArrayList<VideoItem> parsedNewsList)
+    {
         parsedNewsList.removeAll(mNewslist);
         mNewslist.addAll(parsedNewsList);
         notifyDataSetChanged();
     }
 
-    public ArrayList<VideoItem> getNewsList() {
+    public ArrayList<VideoItem> getNewsList()
+    {
         return mNewslist;
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, ViewGroup parent)
+    {
 
-        if (convertView == null) {
+        if (convertView == null)
+        {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_element, parent, false);
         }
 
@@ -67,36 +73,44 @@ public class ListAdapter extends ArrayAdapter<VideoItem> {
     }
 
     @Override
-    public void clear() {
+    public void clear()
+    {
         super.clear();
         mNewslist.clear();
     }
 
 
     @Override
-    public int getCount() {
+    public int getCount()
+    {
         return mNewslist.size();
     }
 
     @Override
-    public VideoItem getItem(int position) {
+    public VideoItem getItem(int position)
+    {
         return mNewslist.get(position);
     }
 
     @Override
-    public long getItemId(int position) {
+    public long getItemId(int position)
+    {
         return position;
     }
 
-    public void prependNewsList(ArrayList<VideoItem> newsList) {
-        for (VideoItem boardNews : newsList) {
+    public void prependNewsList(ArrayList<VideoItem> newsList)
+    {
+        for (VideoItem boardNews : newsList)
+        {
             mNewslist.add(0, boardNews);
         }
         notifyDataSetChanged();
     }
-    private void JUDInit() {
+    private void JUDInit()
+    {
         Locale russian = new Locale("ru");
-        String[] newMonths = {
+        String[] newMonths =
+                {
                 "января", "февраля", "марта", "апреля", "мая", "июня",
                 "июля", "августа", "сентября", "октября", "ноября", "декабря"};
         DateFormatSymbols dfs = DateFormatSymbols.getInstance(russian);

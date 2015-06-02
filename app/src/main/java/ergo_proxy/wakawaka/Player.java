@@ -13,7 +13,8 @@ import android.widget.TextView;
 
 import ergo_proxy.wakawaka.Model.VideoItem;
 
-public class Player extends Fragment {
+public class Player extends Fragment
+{
     private static final String VIDEO_TAG = "VideoSaveState";
     private VideoItem mVideoItem;
 
@@ -21,17 +22,21 @@ public class Player extends Fragment {
     private TextView mTimeTextView;
     private TextView mViewsCountTextView;
 
-    public Player() {
+    public Player()
+    {
 
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
-        if (savedInstanceState != null) {
+        if (savedInstanceState != null)
+        {
             mVideoItem =(VideoItem) savedInstanceState.getSerializable(VIDEO_TAG);
-            if (mVideoItem == null ) {
+            if (mVideoItem == null )
+            {
                 mVideoItem=new VideoItem();
             }
         }else{
@@ -40,11 +45,13 @@ public class Player extends Fragment {
 
     }
 
-    public VideoItem getmVideoItem() {
+    public VideoItem getmVideoItem()
+    {
         return mVideoItem;
     }
 
-    public void setVideoItem(VideoItem videoItem) {
+    public void setVideoItem(VideoItem videoItem)
+    {
         this.mVideoItem = videoItem;
         mVideoTitleBigTextView.setText(mVideoItem.getTitle());
         mTimeTextView.setText(mVideoItem.getId());
@@ -53,7 +60,8 @@ public class Player extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+                             Bundle savedInstanceState)
+    {
         View view = inflater.inflate(R.layout.fragment_info, container, false);
         mVideoTitleBigTextView = (TextView) view.findViewById(R.id.videoTitleBig);
         mTimeTextView = (TextView) view.findViewById(R.id.Time);
@@ -62,7 +70,8 @@ public class Player extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(Bundle outState)
+    {
         super.onSaveInstanceState(outState);
     }
 }

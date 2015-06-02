@@ -30,7 +30,8 @@ import ergo_proxy.wakawaka.Model.VideoItem;
 import ergo_proxy.wakawaka.Util.DeveloperKey;
 import ergo_proxy.wakawaka.Util.YouTubeConnector;
 
-public class VideoListActivityFragment extends Fragment {
+public class VideoListActivityFragment extends Fragment
+{
 
     private EditText searchInput;
     private Handler handler;
@@ -43,15 +44,18 @@ public class VideoListActivityFragment extends Fragment {
     private YouTubePlayer youTubePlayer;
     private YouTubePlayerSupportFragment youTubePlayerFragment;
     private Player infoFragment;
-    public VideoListActivityFragment() {
+    public VideoListActivityFragment()
+    {
     }
 
-    public static VideoListActivityFragment newInstance() {
+    public static VideoListActivityFragment newInstance()
+    {
         return new VideoListActivityFragment();
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
+    public void onActivityCreated(Bundle savedInstanceState)
+    {
         super.onActivityCreated(savedInstanceState);
         mAdapter =  new ListAdapter(getActivity());
         mListView = (ListView) getView().findViewById(R.id.videos_found);
@@ -60,13 +64,16 @@ public class VideoListActivityFragment extends Fragment {
 
         searchInput = (EditText)getView().findViewById(R.id.search_input);
         handler = new Handler();
-        searchInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        searchInput.setOnEditorActionListener(new TextView.OnEditorActionListener()
+        {
             @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
+            {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH ||
                         actionId == EditorInfo.IME_ACTION_DONE ||
                         event.getAction() == KeyEvent.ACTION_DOWN &&
-                                event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                                event.getKeyCode() == KeyEvent.KEYCODE_ENTER)
+                {
                     searchOnYoutube(v.getText().toString());
                     return false;
                 }
@@ -83,16 +90,20 @@ public class VideoListActivityFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+                             Bundle savedInstanceState)
+    {
         return inflater.inflate(R.layout.fragment_video_list, container, false);
     }
 
-    private void addClickListener(){
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    private void addClickListener()
+    {
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
 
             @Override
             public void onItemClick(AdapterView<?> av, View v, int pos,
-                                    long id) {
+                                    long id)
+            {
                 if (draggablePanel.getVisibility()!=View.VISIBLE)
                     draggablePanel.setVisibility(View.VISIBLE);
                 VideoItem videoItem = searchResults.get(pos);
@@ -103,27 +114,38 @@ public class VideoListActivityFragment extends Fragment {
         });
     }
 
-    private void searchOnYoutube(final String keywords){
-        new Thread(){
-            public void run(){
+    private void searchOnYoutube(final String keywords)
+    {
+        new Thread()
+        {
+            public void run()
+            {
                 YouTubeConnector yc = new YouTubeConnector(getActivity());
                 if (keywords!=null)
                     searchResults = yc.search(keywords);
                 else
                     searchResults = yc.popularvideo("MostPopular");
-                handler.post(new Runnable(){
-                    public void run() {
-                        if (keywords != null) {
+                handler.post(new Runnable()
+                {
+                    public void run()
+                    {
+                        if (keywords != null)
+                        {
 
-                            if (!searchResults.isEmpty()) {
+                            if (!searchResults.isEmpty())
+                            {
                                 mListView.setAdapter(null);
                                 mAdapter.clear();
                                 mAdapter.addNewslist(searchResults);
                                 mListView.setAdapter(mAdapter);
-                            } else {
+                            }
+                            else
+                            {
                                 mAdapter.addNewslist(searchResults);
                             }
-                        } else {
+                        }
+                        else
+                        {
                             mAdapter.addNewslist(searchResults);
                         }
 
@@ -133,67 +155,83 @@ public class VideoListActivityFragment extends Fragment {
         }.start();
     }
 
-    private void hookDraggablePanelListeners() {
+    private void hookDraggablePanelListeners()
+    {
         draggablePanel.setFragmentManager(getActivity().getSupportFragmentManager());
         draggablePanel.setTopFragment(youTubePlayerFragment);
         infoFragment = new Player();
         draggablePanel.setBottomFragment(infoFragment);
-        draggablePanel.setDraggableListener(new DraggableListener() {
+        draggablePanel.setDraggableListener(new DraggableListener()
+        {
             @Override
-            public void onMaximized() {
+            public void onMaximized()
+            {
                 playVideo();
             }
 
             @Override
-            public void onMinimized() {
+            public void onMinimized()
+            {
 
             }
 
             @Override
-            public void onClosedToLeft() {
+            public void onClosedToLeft()
+            {
                 pauseVideo();
             }
 
             @Override
-            public void onClosedToRight() {
+            public void onClosedToRight()
+            {
                 pauseVideo();
             }
         });
         draggablePanel.initializeView();
         draggablePanel.setVisibility(View.GONE);
     }
-    private void pauseVideo() {
-        if (youTubePlayer.isPlaying()) {
+    private void pauseVideo()
+    {
+        if (youTubePlayer.isPlaying())
+        {
             youTubePlayer.pause();
         }
     }
-    private void playVideo() {
-        if (!youTubePlayer.isPlaying()) {
+    private void playVideo()
+    {
+        if (!youTubePlayer.isPlaying())
+        {
             youTubePlayer.play();
         }
     }
-    private void initializeYoutubeFragment() {
+    private void initializeYoutubeFragment()
+    {
         youTubePlayerFragment = new YouTubePlayerSupportFragment();
-        youTubePlayerFragment.initialize(DeveloperKey.DEVELOPER_KEY, new YouTubePlayer.OnInitializedListener() {
+        youTubePlayerFragment.initialize(DeveloperKey.DEVELOPER_KEY, new YouTubePlayer.OnInitializedListener()
+        {
 
             @Override
-            public void onInitializationSuccess(YouTubePlayer.Provider provider,
-                                                YouTubePlayer player, boolean wasRestored) {
-                if (!wasRestored) {
+            public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer player, boolean wasRestored)
+            {
+                if (!wasRestored)
+                {
                     youTubePlayer = player;
 
                 }
             }
 
             @Override
-            public void onInitializationFailure(YouTubePlayer.Provider provider,
-                                                YouTubeInitializationResult error) {
+            public void onInitializationFailure(YouTubePlayer.Provider provider, YouTubeInitializationResult error)
+            {
             }
         });
     }
-    public void setVideoId(String videoId) {
-        if (videoId != null && !videoId.equals(videoId)) {
-            if (youTubePlayer != null) {
+    public void setVideoId(String videoId)
+    {
+        if (videoId != null && !videoId.equals(videoId))
+        {
+            if (youTubePlayer != null)
+            {
                 youTubePlayer.cueVideo(videoId);
                 youTubePlayer.setShowFullscreenButton(true);
 
