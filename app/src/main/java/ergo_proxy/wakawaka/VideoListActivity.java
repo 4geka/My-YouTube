@@ -1,15 +1,15 @@
 package ergo_proxy.wakawaka;
 
-/**
- * Created by Ergo Proxy on 18.05.2015.
- */
-
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+/**
+ * Created by Ergo Proxy on 18.05.2015.
+ * This Activity class defines the home screen for the recipe app.
+ */
 
 public class VideoListActivity extends AppCompatActivity
 {
